@@ -3,7 +3,7 @@
  *
  * To compile:
  *
- * gcc -o libzeromalloc.so -shared -fPIC -O2 zeromalloc.c
+ * gcc -o libzeromalloc.so -shared -fPIC -O2 -ldl zeromalloc.c
  *
  * To use:
  *
@@ -90,8 +90,13 @@ void free(void *ptr)
 
     if (ptr >= (void*) tmpbuff && ptr <= (void*)(tmpbuff + tmppos))
         fprintf(stdout, "freeing temp memory\n");
-    else
+    else {
+        if(ptr) {
+            memset(ptr, 0, malloc_usable_size(ptr));
+            asm volatile("": : :"memory");
+        }
         myfn_free(ptr);
+    }
 }
 /*
 void *realloc(void *ptr, size_t size)
